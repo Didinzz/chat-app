@@ -4,16 +4,18 @@ import { NextResponse } from "next/server";
 export async function GET() {
     const supabase = await createSupabaseServerClient();
 
-    const { data: { session } } = await supabase.auth.getSession();
+    // ✅ Gunakan getUser() yang lebih aman
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!session) {
-        return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+    // ✅ Cek 'user' bukan 'session'
+    if (!user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { data, error } = await supabase
         .from('profiles')
         .select('username, avatar_url')
-        .eq('id', session.user.id)
+        .eq('id', user.id) // ✅ Gunakan user.id
         .single();
 
     if (error) {

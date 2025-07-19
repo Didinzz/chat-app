@@ -6,7 +6,7 @@ import MessageBubble from './MessageBubble';
 import { supabase } from '@/lib/supabaseClient';
 
 
-export default function ChatArea({ activeChat, user }) {
+export default function ChatArea({ activeChat, user, onlineUsers }) {
     const [inputValue, setInputValue] = useState('');
     const [messages, setMessages] = useState([]);
     const messagesEndRef = useRef(null);
@@ -18,7 +18,6 @@ export default function ChatArea({ activeChat, user }) {
     // 1. EFEK UNTUK MENGAMBIL PESAN AWAL (MELALUI API ROUTE)
     useEffect(() => {
         if (activeChat) {
-            console.log(`Fetching messages for chat ID: ${activeChat.id}`);
             const getMessages = async () => {
                 try {
                     const response = await fetch(`/api/messages?chat_id=${activeChat.id}`);
@@ -39,7 +38,6 @@ export default function ChatArea({ activeChat, user }) {
     }, [activeChat]);
 
     // 2. EFEK UNTUK REAL-TIME SUBSCRIPTION (TETAP DI CLIENT)
-    // Ini penting karena koneksi real-time bersifat persisten (long-lived)
     useEffect(() => {
         if (!activeChat) return;
 
@@ -99,18 +97,22 @@ export default function ChatArea({ activeChat, user }) {
         );
     }
 
+    const isPeerOnline = !!onlineUsers[activeChat.other_user_id];
+
     return (
         <div className="w-2/3 flex flex-col bg-white dark:bg-gray-800 transition-colors duration-300">
             {/* Chat Header */}
             <div className="p-4 bg-white dark:bg-gray-800 border-b border-border-light dark:border-border-dark flex items-center justify-between shadow-sm transition-colors duration-300">
                 <div className="flex items-center">
-                    <div className={`avatar w-10 h-10 rounded-full ${activeChat.avatar_bg} flex items-center justify-center text-white font-medium shadow-md`}>
-                        {activeChat?.name?.charAt(0)?.toUpperCase()}
+                    <div className={`avatar w-10 h-10 rounded-full flex items-center justify-center text-indigo-600 dark:text-white font-medium shadow-md`}>
+                        {activeChat?.avatar_url ? (
+                            <img src={activeChat.avatar_url} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                        ) : (activeChat?.name?.charAt(0)?.toUpperCase())}
                     </div>
                     <div className="ml-3">
                         <h3 className="font-medium text-gray-800 dark:text-white">{activeChat.name}</h3>
-                        <p className={`text-xs ${activeChat.isOnline ? 'text-green-500' : 'text-gray-400'}`}>
-                            {activeChat.isOnline ? 'Online' : 'Offline'}
+                        <p className={`text-xs ${isPeerOnline ? 'text-green-500' : 'text-gray-400'}`}>
+                            {isPeerOnline ? 'Online' : 'Offline'}
                         </p>
                     </div>
                 </div>
@@ -153,7 +155,7 @@ export default function ChatArea({ activeChat, user }) {
                     </div>
                     <button
                         onClick={handleSendMessage}
-                        className="send-button p-3 bg-indigo-500 text-white rounded-full hover:bg-indigo-600 transition shadow-md"
+                        className="send-button p-3 bg-indigo-500 text-white rounded-full hover:bg-indigo-600 transition shadow-md cursor-pointer"
                     >
                         {/* Send Icon */}
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

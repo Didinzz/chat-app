@@ -8,7 +8,7 @@ export default function MessageBubble({ message, isSender, otherUser }) {
         return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
- 
+
     if (isSender) {
         // Tampilan untuk pesan yang dikirim
         return (
@@ -30,7 +30,9 @@ export default function MessageBubble({ message, isSender, otherUser }) {
         <div className="flex items-end space-x-2">
             <div className={`avatar w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-white font-medium shadow-sm`}>
                 {/* Menampilkan huruf pertama dari username lawan bicara */}
-                {otherUser?.username?.charAt(0).toUpperCase()}
+                {otherUser?.avatar_url ? (
+                    <img src={otherUser.avatar_url} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                ) : otherUser?.username?.charAt(0).toUpperCase()}
             </div>
             <div className="message received p-3 bg-message-received-light dark:bg-message-received-dark rounded-t-2xl rounded-r-2xl shadow-sm message-bubble-animation">
                 <p className="text-gray-800 dark:text-text-dark">{message.text}</p>
